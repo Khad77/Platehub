@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LazyPlate — Recipes from whatever's in your fridge | PlateHub</title>
+  <meta name="description" content="Type in whatever ingredients you have. LazyPlate finds real recipes you can make right now — sorted by how much effort you want to put in.">
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    .lp-hero {
+      padding: 52px 0 40px;
+      text-align: center;
+    }
+
+    .lp-headline {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 5vw, 48px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin: 14px 0 14px;
+      color: var(--black);
+    }
+
+    .lp-sub {
+      font-size: 16px;
+      color: var(--gray-mid);
+      max-width: 440px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Main tool area */
+    .lp-tool {
+      padding: 0 0 80px;
+    }
+
+    .lp-input-section {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .lp-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      color: var(--black);
+      margin-bottom: 10px;
+    }
+
+    .lp-label span {
+      font-weight: 400;
+      color: var(--gray-mid);
+      margin-left: 4px;
+    }
+
+    .ingredient-input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .ingredient-input-row .ph-input {
+      flex: 1;
+    }
+
+    .add-btn {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--lazy-light);
+      color: var(--lazy-dark);
+      border: 1px solid transparent;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      font-weight: 400;
+    }
+
+    .add-btn:hover { background: #d4e8d0; }
+
+    .ingredients-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 36px;
+    }
+
+    .ingredient-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      padding: 6px 10px 6px 12px;
+      border-radius: 20px;
+      background: var(--lazy-light);
+      color: var(--lazy-dark);
+      border: 1px solid transparent;
+    }
+
+    .chip-remove {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(90, 122, 74, 0.2);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--lazy-dark);
+      line-height: 1;
+      transition: background 0.12s;
+      flex-shrink: 0;
+    }
+
+    .chip-remove:hover { background: rgba(90, 122, 74, 0.35); }
+
+    .empty-chips {
+      font-size: 14px;
+      color: #B4B2A9;
+      font-style: italic;
+    }
+
+    .lp-options-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .lp-options-group {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 20px 22px;
+    }
+
+    .effort-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .effort-tag {
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--gray-border);
+      background: #fff;
+      color: var(--black);
+      cursor: pointer;
+      transition: all 0.12s;
+      font-family: var(--font-body);
+    }
+
+    .effort-tag:hover { background: var(--gray-light); }
+    .effort-tag.selected { background: var(--lazy); color: #fff; border-color: var(--lazy); }
+
+    .generate-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-generate {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 13px 28px;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      background: var(--lazy);
+      color: #fff;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-generate:hover { background: var(--lazy-dark); }
+    .btn-generate:active { transform: scale(0.98); }
+    .btn-generate:disabled { background: #B4B2A9; cursor: not-allowed; transform: none; }
+
+    .five-ing-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--gray-mid);
+      cursor: pointer;
+    }
+
+    .toggle-switch {
+      width: 36px;
+      height: 20px;
+      border-radius: 10px;
+      background: var(--gray-light);
+      border: 1px solid var(--gray-border);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch.on { background: var(--lazy); border-color: var(--lazy); }
+
+    .toggle-knob {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+
+    .toggle-switch.on .toggle-knob { transform: translateX(16px); }
+
+    /* Results */
+    .results-area {
+      margin-top: 24px;
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .results-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--gray-mid);
+    }
+
+    .recipe-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .recipe-card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .recipe-card:nth-child(2) { animation-delay: 0.08s; }
+    .recipe-card:nth-child(3) { animation-delay: 0.16s; }
+
+    .recipe-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .recipe-name {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.25;
+      flex: 1;
+    }
+
+    .effort-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .effort-badge.easy   { background: var(--lazy-light); color: var(--lazy-dark); }
+    .effort-badge.medium { background: #FFF3DC; color: #8B5E00; }
+    .effort-badge.involved { background: #FDEAEA; color: #8B2020; }
+
+    .recipe-desc {
+      font-size: 14px;
+      color: var(--gray-mid);
+      line-height: 1.55;
+    }
+
+    .recipe-meta {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .recipe-meta-item {
+      font-size: 12px;
+      color: var(--gray-mid);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .recipe-ingredients-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--gray-mid);
+      margin-bottom: 6px;
+    }
+
+    .recipe-ingredients-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .recipe-ing-tag {
+      font-size: 12px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: var(--lazy-light);
+      color: var(--lazy-dark);
+    }
+
+    .recipe-ing-tag.missing {
+      background: #FDEAEA;
+      color: #8B2020;
+    }
+
+    .recipe-steps-toggle {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--lazy-dark);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s;
+      font-family: var(--font-body);
+    }
+
+    .recipe-steps-toggle:hover { color: var(--lazy); }
+
+    .recipe-steps {
+      display: none;
+      font-size: 14px;
+      color: var(--black);
+      line-height: 1.65;
+    }
+
+    .recipe-steps.open { display: block; }
+
+    .recipe-steps ol {
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    /* Loading */
+    .loading-state {
+      text-align: center;
+      padding: 60px 0;
+    }
+
+    .loading-spinner {
+      width: 36px;
+      height: 36px;
+      border: 2.5px solid var(--gray-light);
+      border-top-color: var(--lazy);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 15px;
+      color: var(--gray-mid);
+    }
+
+    .error-state {
+      text-align: center;
+      padding: 40px 24px;
+      background: #FDEAEA;
+      border-radius: var(--radius-lg);
+    }
+
+    .error-state p {
+      font-size: 15px;
+      color: #8B2020;
+      margin-bottom: 12px;
+    }
+
+    /* SEO content */
+    .lp-about {
+      border-top: 0.5px solid var(--gray-border);
+      padding: 48px 0 0;
+      margin-top: 40px;
+    }
+
+    .lp-about h2 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .lp-about p {
+      font-size: 15px;
+      color: var(--gray-mid);
+      line-height: 1.7;
+      max-width: 580px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .lp-options-row { grid-template-columns: 1fr; }
+      .ingredient-input-row .ph-input { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="ph-nav lazy">
+    <a href="../" class="ph-logo">
+      <span class="ph-logo-dot"></span>
+      PlateHub
+    </a>
+    <ul class="ph-nav-links">
+      <li><a href="../steadyplate/">SteadyPlate</a></li>
+      <li><a href="../lazyplate/" class="active">LazyPlate</a></li>
+      <li><a href="../petplate/">PetPlate</a></li>
+    </ul>
+  </nav>
+
+  <section class="lp-hero">
+    <div class="ph-container-narrow">
+      <span class="tool-badge lazy">🥘 LazyPlate</span>
+      <h1 class="lp-headline">What can you make<br>right now?</h1>
+      <p class="lp-sub">Add the ingredients you have on hand. Get real recipes — sorted by how much effort you actually want to put in.</p>
+    </div>
+  </section>
+
+  <section class="lp-tool">
+    <div class="ph-container-narrow">
+
+      <!-- Ingredient input -->
+      <div class="lp-input-section">
+        <label class="lp-label" for="ingredient-input">
+          Your ingredients
+          <span>— add as many as you like</span>
+        </label>
+        <div class="ingredient-input-row">
+          <input
+            type="text"
+            id="ingredient-input"
+            class="ph-input"
+            placeholder="e.g. chicken breast, garlic, olive oil…"
+            autocomplete="off"
+          >
+          <button class="add-btn" id="add-btn" aria-label="Add ingredient">+</button>
+        </div>
+        <div class="ingredients-chips" id="chips-container">
+          <span class="empty-chips" id="empty-chips-msg">Your ingredients will appear here</span>
+        </div>
+      </div>
+
+      <!-- Options -->
+      <div class="lp-options-row">
+        <div class="lp-options-group">
+          <label class="lp-label">Effort level</label>
+          <div class="effort-tags" id="effort-tags">
+            <button class="effort-tag selected" data-value="any">Any</button>
+            <button class="effort-tag" data-value="lazy">Lazy only</button>
+            <button class="effort-tag" data-value="medium">Medium</button>
+            <button class="effort-tag" data-value="involved">I'm cooking</button>
+          </div>
+        </div>
+        <div class="lp-options-group">
+          <label class="lp-label">Dietary</label>
+          <div class="effort-tags" id="diet-tags">
+            <button class="effort-tag selected" data-value="none">No filter</button>
+            <button class="effort-tag" data-value="vegetarian">Vegetarian</button>
+            <button class="effort-tag" data-value="vegan">Vegan</button>
+            <button class="effort-tag" data-value="gluten-free">Gluten-free</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate -->
+      <div class="generate-row">
+        <button class="btn-generate" id="generate-btn" disabled>
+          <span>Find recipes</span>
+          <span>→</span>
+        </button>
+        <label class="five-ing-toggle" id="five-toggle-label">
+          <div class="toggle-switch" id="five-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+          <div class="toggle-knob" id="five-toggle-knob" style="position:absolute"></div>
+          5-ingredient max
+        </label>
+      </div>
+
+      <!-- Results -->
+      <div class="results-area" id="results-area" style="display:none"></div>
+
+      <!-- SEO content -->
+      <div class="lp-about">
+        <h2>Stop staring at your fridge</h2>
+        <p>LazyPlate is a free recipe finder that works backwards — start with what you have, not what a recipe says you need. Add your ingredients, pick your effort level, and get meal ideas in seconds.</p>
+        <p>Whether you have five minutes and a can of chickpeas, or an actual hour and a fridge full of vegetables, LazyPlate finds something real you can make. AI-generated recipes in real time, not a static database — so the results actually reflect what you typed in.</p>
+        <p>Part of <a href="../" style="color: var(--lazy-dark);">PlateHub</a> — free meal planning tools for every kind of eater.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="ph-footer">
+    <div class="ph-footer-inner">
+      <a href="../" class="ph-footer-logo">
+        <span class="ph-logo-dot" style="background:var(--lazy)"></span>
+        PlateHub
+      </a>
+      <ul class="ph-footer-links">
+        <li><a href="../steadyplate/">SteadyPlate</a></li>
+        <li><a href="../lazyplate/">LazyPlate</a></li>
+        <li><a href="../petplate/">PetPlate</a></li>
+        <li><a href="../privacy.html">Privacy</a></li>
+      </ul>
+      <p class="ph-footer-copy">© 2026 PlateHub. Free meal planning tools for everyone.</p>
+    </div>
+  </footer>
+
+  <script>
+    // --- State ---
+    let ingredients = [];
+    let effortFilter = 'any';
+    let dietFilter = 'none';
+    let fiveIngMax = false;
+
+    // --- Elements ---
+    const input = document.getElementById('ingredient-input');
+    const addBtn = document.getElementById('add-btn');
+    const chipsContainer = document.getElementById('chips-container');
+    const emptyMsg = document.getElementById('empty-chips-msg');
+    const generateBtn = document.getElementById('generate-btn');
+    const resultsArea = document.getElementById('results-area');
+    const fiveToggle = document.getElementById('five-toggle');
+
+    // --- Ingredient management ---
+    function addIngredient() {
+      const val = input.value.trim();
+      if (!val) return;
+      const items = val.split(',').map(s => s.trim()).filter(Boolean);
+      items.forEach(item => {
+        if (item && !ingredients.includes(item.toLowerCase())) {
+          ingredients.push(item.toLowerCase());
+        }
+      });
+      input.value = '';
+      renderChips();
+      updateGenerateBtn();
+    }
+
+    function removeIngredient(name) {
+      ingredients = ingredients.filter(i => i !== name);
+      renderChips();
+      updateGenerateBtn();
+    }
+
+    function renderChips() {
+      chipsContainer.innerHTML = '';
+      if (ingredients.length === 0) {
+        chipsContainer.innerHTML = '<span class="empty-chips" id="empty-chips-msg">Your ingredients will appear here</span>';
+        return;
+      }
+      ingredients.forEach(ing => {
+        const chip = document.createElement('span');
+        chip.className = 'ingredient-chip';
+        chip.innerHTML = `${ing} <button class="chip-remove" aria-label="Remove ${ing}">×</button>`;
+        chip.querySelector('.chip-remove').addEventListener('click', () => removeIngredient(ing));
+        chipsContainer.appendChild(chip);
+      });
+    }
+
+    function updateGenerateBtn() {
+      generateBtn.disabled = ingredients.length === 0;
+    }
+
+    addBtn.addEventListener('click', addIngredient);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addIngredient(); } });
+
+    // --- Filter tags ---
+    document.getElementById('effort-tags').addEventListener('click', e => {
+      if (!e.target.matches('.effort-tag')) return;
+      document.querySelectorAll('#effort-tags .effort-tag').forEach(t => t.classList.remove('selected'));
+      e.target.classList.add('selected');
+      effortFilter = e.target.dataset.value;
+    });
+
+    document.getElementById('diet-tags').addEventListener('click', e => {
+      if (!e.target.matches('.effort-tag')) return;
+      document.querySelectorAll('#diet-tags .effort-tag').forEach(t => t.classList.remove('selected'));
+      e.target.classList.add('selected');
+      dietFilter = e.target.dataset.value;
+    });
+
+    // --- 5-ingredient toggle ---
+    fiveToggle.addEventListener('click', toggleFive);
+    fiveToggle.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleFive(); }});
+
+    function toggleFive() {
+      fiveIngMax = !fiveIngMax;
+      fiveToggle.classList.toggle('on', fiveIngMax);
+      fiveToggle.setAttribute('aria-checked', fiveIngMax);
+    }
+
+    // Fix toggle knob positioning
+    (function() {
+      const knob = document.getElementById('five-toggle-knob');
+      fiveToggle.style.position = 'relative';
+      fiveToggle.appendChild(knob);
+    })();
+
+    // --- Generate recipes ---
+    generateBtn.addEventListener('click', generateRecipes);
+
+    async function generateRecipes() {
+      if (ingredients.length === 0) return;
+
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<span>Finding recipes…</span>';
+      resultsArea.style.display = 'block';
+      resultsArea.innerHTML = `
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Cooking up ideas…</p>
+        </div>`;
+
+      const effortNote = effortFilter === 'any' ? 'any effort level' :
+                         effortFilter === 'lazy' ? 'minimal effort (under 20 minutes, very few steps)' :
+                         effortFilter === 'medium' ? 'medium effort (30-45 minutes)' :
+                         'involved cooking (45+ minutes, proper technique)';
+
+      const dietNote = dietFilter === 'none' ? '' : `, must be ${dietFilter}`;
+      const fiveNote = fiveIngMax ? ' Use 5 ingredients or fewer per recipe.' : '';
+
+      const prompt = `You are a practical home cooking assistant. The user has these ingredients: ${ingredients.join(', ')}.
+
+Generate exactly 3 recipe ideas they can make. Requirements:
+- Effort level: ${effortNote}${dietNote}${fiveNote}
+- Each recipe should primarily use the ingredients listed (they may have basic pantry staples: salt, pepper, oil, butter, water)
+- Be realistic and practical, not fancy
+
+Respond ONLY with valid JSON, no markdown, no preamble. Format:
+{
+  "recipes": [
+    {
+      "name": "Recipe Name",
+      "effort": "Easy|Medium|Involved",
+      "time": "15 mins",
+      "servings": "2",
+      "description": "One sentence description.",
+      "uses": ["ingredient1", "ingredient2"],
+      "extra": ["pantry item needed"],
+      "steps": ["Step one.", "Step two.", "Step three."]
+    }
+  ]
+}`;
+
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 1000,
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+
+        if (!response.ok) throw new Error(`API error ${response.status}`);
+
+        const data = await response.json();
+        const text = data.content.map(b => b.text || '').join('');
+        const clean = text.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+
+        renderRecipes(parsed.recipes);
+
+      } catch (err) {
+        resultsArea.innerHTML = `
+          <div class="error-state">
+            <p>Couldn't generate recipes right now. Check your connection and try again.</p>
+            <button class="btn btn-outline" onclick="generateRecipes()">Try again</button>
+          </div>`;
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<span>Find recipes</span><span>→</span>';
+      }
+    }
+
+    function renderRecipes(recipes) {
+      const effortClass = { 'Easy': 'easy', 'Medium': 'medium', 'Involved': 'involved' };
+
+      const html = `
+        <div class="results-header">
+          <h2 class="results-title">Your recipes</h2>
+          <span class="results-count">${recipes.length} ideas</span>
+        </div>
+        <div class="recipe-cards">
+          ${recipes.map((r, i) => `
+            <div class="recipe-card">
+              <div class="recipe-card-top">
+                <h3 class="recipe-name">${r.name}</h3>
+                <span class="effort-badge ${effortClass[r.effort] || 'easy'}">${r.effort}</span>
+              </div>
+              <p class="recipe-desc">${r.description}</p>
+              <div class="recipe-meta">
+                <span class="recipe-meta-item">⏱ ${r.time}</span>
+                <span class="recipe-meta-item">🍽 ${r.servings} servings</span>
+              </div>
+              <div>
+                <p class="recipe-ingredients-label">Ingredients</p>
+                <div class="recipe-ingredients-list">
+                  ${(r.uses || []).map(ing => `<span class="recipe-ing-tag">${ing}</span>`).join('')}
+                  ${(r.extra || []).map(ing => `<span class="recipe-ing-tag missing">+ ${ing}</span>`).join('')}
+                </div>
+              </div>
+              <div>
+                <button class="recipe-steps-toggle" onclick="toggleSteps(this)" data-index="${i}">
+                  Show steps ↓
+                </button>
+                <div class="recipe-steps" id="steps-${i}">
+                  <ol>${(r.steps || []).map(s => `<li>${s}</li>`).join('')}</ol>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+
+      resultsArea.innerHTML = html;
+      resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function toggleSteps(btn) {
+      const idx = btn.dataset.index;
+      const stepsEl = document.getElementById(`steps-${idx}`);
+      const open = stepsEl.classList.toggle('open');
+      btn.textContent = open ? 'Hide steps ↑' : 'Show steps ↓';
+    }
+  </script>
+
+</body>
+</html>

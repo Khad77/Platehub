@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SteadyPlate — Meal planner & macro tracker | PlateHub</title>
+  <meta name="description" content="Free weekly meal planner with calorie and macro tracking. Plan your meals, hit your nutrition targets, and build a grocery list automatically.">
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    .sp-hero {
+      padding: 52px 0 40px;
+      text-align: center;
+    }
+
+    .sp-headline {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 5vw, 48px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin: 14px 0 14px;
+    }
+
+    .sp-sub {
+      font-size: 16px;
+      color: var(--gray-mid);
+      max-width: 440px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .sp-tool { padding: 0 0 80px; }
+
+    /* Targets card */
+    .targets-card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+
+    .targets-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .targets-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--black);
+    }
+
+    .targets-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .target-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--gray-mid);
+      margin-bottom: 6px;
+    }
+
+    .target-field input {
+      width: 100%;
+      font-family: var(--font-body);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--black);
+      background: var(--steady-light);
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+
+    .target-field input:focus { border-color: var(--steady); }
+
+    /* Daily totals bar */
+    .totals-bar {
+      background: var(--steady-light);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .total-item { text-align: center; }
+
+    .total-value {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--steady-dark);
+      display: block;
+    }
+
+    .total-label {
+      font-size: 11px;
+      color: var(--steady);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .total-item.over .total-value { color: #C0392B; }
+
+    /* Day selector */
+    .day-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .day-tabs::-webkit-scrollbar { display: none; }
+
+    .day-tab {
+      flex-shrink: 0;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--gray-border);
+      background: #fff;
+      color: var(--gray-mid);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .day-tab:hover { background: var(--gray-light); color: var(--black); }
+    .day-tab.active { background: var(--steady); color: #fff; border-color: var(--steady); }
+
+    /* Meal slots */
+    .meal-slots {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .meal-slot {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    .meal-slot-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 0.5px solid var(--gray-border);
+    }
+
+    .meal-slot-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-mid);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .meal-slot-cals {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--steady-dark);
+    }
+
+    .meal-entries {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 44px;
+    }
+
+    .meal-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 4px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+    }
+
+    .meal-entry:hover { background: var(--gray-light); }
+
+    .entry-name { flex: 1; }
+
+    .entry-macros {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--gray-mid);
+    }
+
+    .entry-remove {
+      background: none;
+      border: none;
+      color: var(--gray-mid);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 0 4px;
+      margin-left: 8px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .entry-remove:hover { color: #C0392B; }
+
+    .meal-empty {
+      font-size: 13px;
+      color: #B4B2A9;
+      font-style: italic;
+      padding: 6px 4px;
+    }
+
+    .add-food-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px 14px;
+      border-top: 0.5px solid var(--gray-border);
+    }
+
+    .add-food-row .ph-input { font-size: 14px; padding: 9px 12px; }
+
+    .btn-add-food {
+      flex-shrink: 0;
+      padding: 9px 14px;
+      border-radius: var(--radius-md);
+      background: var(--steady-light);
+      color: var(--steady-dark);
+      border: 1px solid transparent;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+      font-family: var(--font-body);
+    }
+
+    .btn-add-food:hover { background: #cddaec; }
+    .btn-add-food:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Grocery list */
+    .grocery-section {
+      margin-top: 24px;
+    }
+
+    .grocery-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .grocery-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .grocery-list {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 20px 22px;
+    }
+
+    .grocery-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 0.5px solid var(--gray-border);
+      font-size: 14px;
+    }
+
+    .grocery-item:last-child { border-bottom: none; }
+
+    .grocery-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1.5px solid var(--gray-border);
+      background: #fff;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .grocery-check.checked { background: var(--steady); border-color: var(--steady); color: #fff; }
+
+    .grocery-empty {
+      font-size: 14px;
+      color: #B4B2A9;
+      font-style: italic;
+      padding: 8px 0;
+    }
+
+    /* SEO */
+    .sp-about {
+      border-top: 0.5px solid var(--gray-border);
+      padding: 48px 0 0;
+      margin-top: 40px;
+    }
+
+    .sp-about h2 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .sp-about p {
+      font-size: 15px;
+      color: var(--gray-mid);
+      line-height: 1.7;
+      max-width: 580px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 540px) {
+      .targets-grid { grid-template-columns: repeat(2, 1fr); }
+      .totals-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="ph-nav steady">
+    <a href="../" class="ph-logo">
+      <span class="ph-logo-dot"></span>
+      PlateHub
+    </a>
+    <ul class="ph-nav-links">
+      <li><a href="../steadyplate/" class="active">SteadyPlate</a></li>
+      <li><a href="../lazyplate/">LazyPlate</a></li>
+      <li><a href="../petplate/">PetPlate</a></li>
+    </ul>
+  </nav>
+
+  <section class="sp-hero">
+    <div class="ph-container-narrow">
+      <span class="tool-badge steady">📊 SteadyPlate</span>
+      <h1 class="sp-headline">Plan your week.<br>Hit your targets.</h1>
+      <p class="sp-sub">Set your calorie and macro goals, log meals for each day, and let SteadyPlate build your grocery list.</p>
+    </div>
+  </section>
+
+  <section class="sp-tool">
+    <div class="ph-container-narrow">
+
+      <!-- Targets -->
+      <div class="targets-card">
+        <div class="targets-header">
+          <span class="targets-title">Daily targets</span>
+          <span style="font-size:12px;color:var(--gray-mid)">Edit any field</span>
+        </div>
+        <div class="targets-grid">
+          <div class="target-field">
+            <label>Calories</label>
+            <input type="number" id="target-cal" value="2000">
+          </div>
+          <div class="target-field">
+            <label>Protein (g)</label>
+            <input type="number" id="target-protein" value="150">
+          </div>
+          <div class="target-field">
+            <label>Carbs (g)</label>
+            <input type="number" id="target-carbs" value="200">
+          </div>
+          <div class="target-field">
+            <label>Fat (g)</label>
+            <input type="number" id="target-fat" value="65">
+          </div>
+        </div>
+      </div>
+
+      <!-- Day tabs -->
+      <div class="day-tabs" id="day-tabs">
+        <button class="day-tab active" data-day="0">Monday</button>
+        <button class="day-tab" data-day="1">Tuesday</button>
+        <button class="day-tab" data-day="2">Wednesday</button>
+        <button class="day-tab" data-day="3">Thursday</button>
+        <button class="day-tab" data-day="4">Friday</button>
+        <button class="day-tab" data-day="5">Saturday</button>
+        <button class="day-tab" data-day="6">Sunday</button>
+      </div>
+
+      <!-- Totals bar -->
+      <div class="totals-bar" id="totals-bar">
+        <div class="total-item" id="total-cal-wrap">
+          <span class="total-value" id="total-cal">0</span>
+          <span class="total-label">/ <span id="tgt-cal-disp">2000</span> kcal</span>
+        </div>
+        <div class="total-item" id="total-protein-wrap">
+          <span class="total-value" id="total-protein">0g</span>
+          <span class="total-label">/ <span id="tgt-protein-disp">150</span>g protein</span>
+        </div>
+        <div class="total-item" id="total-carbs-wrap">
+          <span class="total-value" id="total-carbs">0g</span>
+          <span class="total-label">/ <span id="tgt-carbs-disp">200</span>g carbs</span>
+        </div>
+        <div class="total-item" id="total-fat-wrap">
+          <span class="total-value" id="total-fat">0g</span>
+          <span class="total-label">/ <span id="tgt-fat-disp">65</span>g fat</span>
+        </div>
+      </div>
+
+      <!-- Meal slots -->
+      <div class="meal-slots" id="meal-slots"></div>
+
+      <!-- Grocery list -->
+      <div class="grocery-section">
+        <div class="grocery-header">
+          <h2 class="grocery-title">Grocery list</h2>
+          <button class="btn btn-outline" style="font-size:13px;padding:7px 14px" onclick="clearGrocery()">Clear</button>
+        </div>
+        <div class="grocery-list" id="grocery-list">
+          <p class="grocery-empty">Add meals above — ingredients appear here automatically.</p>
+        </div>
+      </div>
+
+      <div class="sp-about">
+        <h2>Meal planning that actually sticks</h2>
+        <p>SteadyPlate is a free weekly meal planner with calorie and macro tracking built in. Set your daily targets, log what you eat for each meal, and watch your totals update in real time.</p>
+        <p>The grocery list builds itself as you add meals — so when it's time to shop, you already know what you need. No account, no subscription, no app download.</p>
+        <p>Part of <a href="../" style="color: var(--steady-dark);">PlateHub</a> — free meal planning tools for every kind of eater.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="ph-footer">
+    <div class="ph-footer-inner">
+      <a href="../" class="ph-footer-logo">
+        <span class="ph-logo-dot"></span>
+        PlateHub
+      </a>
+      <ul class="ph-footer-links">
+        <li><a href="../steadyplate/">SteadyPlate</a></li>
+        <li><a href="../lazyplate/">LazyPlate</a></li>
+        <li><a href="../petplate/">PetPlate</a></li>
+        <li><a href="../privacy.html">Privacy</a></li>
+      </ul>
+      <p class="ph-footer-copy">© 2026 PlateHub. Free meal planning tools for everyone.</p>
+    </div>
+  </footer>
+
+  <script>
+    const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const MEALS = ['Breakfast','Lunch','Dinner','Snacks'];
+
+    // Data structure: week[day][meal] = [{name, cal, protein, carbs, fat}]
+    let week = DAYS.map(() => Object.fromEntries(MEALS.map(m => [m, []])));
+    let currentDay = 0;
+    let groceryItems = {};
+    let groceryChecked = {};
+
+    // Targets
+    function getTargets() {
+      return {
+        cal:     parseInt(document.getElementById('target-cal').value)     || 2000,
+        protein: parseInt(document.getElementById('target-protein').value) || 150,
+        carbs:   parseInt(document.getElementById('target-carbs').value)   || 200,
+        fat:     parseInt(document.getElementById('target-fat').value)     || 65,
+      };
+    }
+
+    ['target-cal','target-protein','target-carbs','target-fat'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        updateTotalsDisplay();
+        document.getElementById('tgt-cal-disp').textContent     = document.getElementById('target-cal').value     || 2000;
+        document.getElementById('tgt-protein-disp').textContent = document.getElementById('target-protein').value || 150;
+        document.getElementById('tgt-carbs-disp').textContent   = document.getElementById('target-carbs').value   || 200;
+        document.getElementById('tgt-fat-disp').textContent     = document.getElementById('target-fat').value     || 65;
+      });
+    });
+
+    // Day tabs
+    document.getElementById('day-tabs').addEventListener('click', e => {
+      const tab = e.target.closest('.day-tab');
+      if (!tab) return;
+      currentDay = parseInt(tab.dataset.day);
+      document.querySelectorAll('.day-tab').forEach(t => t.classList.toggle('active', parseInt(t.dataset.day) === currentDay));
+      renderMealSlots();
+      updateTotalsDisplay();
+    });
+
+    // Render meal slots
+    function renderMealSlots() {
+      const container = document.getElementById('meal-slots');
+      container.innerHTML = MEALS.map(meal => {
+        const entries = week[currentDay][meal];
+        const slotCals = entries.reduce((sum, e) => sum + e.cal, 0);
+        return `
+          <div class="meal-slot" id="slot-${meal}">
+            <div class="meal-slot-header">
+              <span class="meal-slot-name">${meal}</span>
+              <span class="meal-slot-cals">${slotCals > 0 ? slotCals + ' kcal' : ''}</span>
+            </div>
+            <div class="meal-entries" id="entries-${meal}">
+              ${entries.length === 0
+                ? '<span class="meal-empty">Nothing logged yet</span>'
+                : entries.map((e, i) => `
+                    <div class="meal-entry">
+                      <span class="entry-name">${e.name}</span>
+                      <div class="entry-macros">
+                        <span>${e.cal} kcal</span>
+                        <span>${e.protein}g P</span>
+                        <span>${e.carbs}g C</span>
+                        <span>${e.fat}g F</span>
+                      </div>
+                      <button class="entry-remove" onclick="removeEntry('${meal}', ${i})" aria-label="Remove">×</button>
+                    </div>`).join('')
+              }
+            </div>
+            <div class="add-food-row">
+              <input type="text" class="ph-input" id="food-input-${meal}" placeholder="Add food (e.g. 'chicken breast 150g')" autocomplete="off">
+              <button class="btn-add-food" id="add-btn-${meal}" onclick="lookupFood('${meal}')">Look up</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      MEALS.forEach(meal => {
+        document.getElementById(`food-input-${meal}`)
+          .addEventListener('keydown', e => { if (e.key === 'Enter') lookupFood(meal); });
+      });
+    }
+
+    async function lookupFood(meal) {
+      const inputEl = document.getElementById(`food-input-${meal}`);
+      const btn = document.getElementById(`add-btn-${meal}`);
+      const query = inputEl.value.trim();
+      if (!query) return;
+
+      btn.disabled = true;
+      btn.textContent = '…';
+
+      const prompt = `Return ONLY valid JSON with no markdown for this food query: "${query}"
+Format: {"name": "Food name", "cal": 250, "protein": 25, "carbs": 10, "fat": 8}
+Use realistic nutritional values. If a portion size is mentioned, use that amount. Otherwise use a standard serving.`;
+
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 1000,
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+
+        const data = await res.json();
+        const text = data.content.map(b => b.text || '').join('');
+        const clean = text.replace(/```json|```/g, '').trim();
+        const food = JSON.parse(clean);
+
+        week[currentDay][meal].push(food);
+        addToGrocery(food.name);
+        inputEl.value = '';
+        renderMealSlots();
+        updateTotalsDisplay();
+        renderGrocery();
+
+      } catch {
+        inputEl.style.borderColor = '#C0392B';
+        setTimeout(() => { inputEl.style.borderColor = ''; }, 1500);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Look up';
+      }
+    }
+
+    function removeEntry(meal, idx) {
+      week[currentDay][meal].splice(idx, 1);
+      renderMealSlots();
+      updateTotalsDisplay();
+      rebuildGrocery();
+    }
+
+    function updateTotalsDisplay() {
+      const targets = getTargets();
+      const dayEntries = MEALS.flatMap(m => week[currentDay][m]);
+      const totals = {
+        cal:     dayEntries.reduce((s, e) => s + (e.cal || 0), 0),
+        protein: dayEntries.reduce((s, e) => s + (e.protein || 0), 0),
+        carbs:   dayEntries.reduce((s, e) => s + (e.carbs || 0), 0),
+        fat:     dayEntries.reduce((s, e) => s + (e.fat || 0), 0),
+      };
+
+      document.getElementById('total-cal').textContent     = totals.cal;
+      document.getElementById('total-protein').textContent = totals.protein + 'g';
+      document.getElementById('total-carbs').textContent   = totals.carbs + 'g';
+      document.getElementById('total-fat').textContent     = totals.fat + 'g';
+
+      document.getElementById('total-cal-wrap').classList.toggle('over', totals.cal > targets.cal);
+      document.getElementById('total-protein-wrap').classList.toggle('over', totals.protein > targets.protein);
+      document.getElementById('total-carbs-wrap').classList.toggle('over', totals.carbs > targets.carbs);
+      document.getElementById('total-fat-wrap').classList.toggle('over', totals.fat > targets.fat);
+    }
+
+    // Grocery
+    function addToGrocery(name) {
+      const key = name.toLowerCase();
+      groceryItems[key] = (groceryItems[key] || 0) + 1;
+    }
+
+    function rebuildGrocery() {
+      groceryItems = {};
+      DAYS.forEach((_, dayIdx) => {
+        MEALS.forEach(meal => {
+          week[dayIdx][meal].forEach(e => addToGrocery(e.name));
+        });
+      });
+      renderGrocery();
+    }
+
+    function renderGrocery() {
+      const container = document.getElementById('grocery-list');
+      const keys = Object.keys(groceryItems);
+      if (keys.length === 0) {
+        container.innerHTML = '<p class="grocery-empty">Add meals above — ingredients appear here automatically.</p>';
+        return;
+      }
+      container.innerHTML = keys.map(key => {
+        const count = groceryItems[key];
+        const checked = groceryChecked[key];
+        return `
+          <div class="grocery-item">
+            <div class="grocery-check ${checked ? 'checked' : ''}" onclick="toggleGrocery('${key}')" role="checkbox" aria-checked="${checked}" tabindex="0">
+              ${checked ? '✓' : ''}
+            </div>
+            <span style="${checked ? 'text-decoration:line-through;color:var(--gray-mid)' : ''}">${key}${count > 1 ? ` ×${count}` : ''}</span>
+          </div>`;
+      }).join('');
+    }
+
+    function toggleGrocery(key) {
+      groceryChecked[key] = !groceryChecked[key];
+      renderGrocery();
+    }
+
+    function clearGrocery() {
+      groceryChecked = {};
+      renderGrocery();
+    }
+
+    // Init
+    renderMealSlots();
+    updateTotalsDisplay();
+    renderGrocery();
+  </script>
+
+</body>
+</html>

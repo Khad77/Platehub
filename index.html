@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlateHub — Three tools for every kind of eater</title>
+  <meta name="description" content="Free meal planning tools for every kind of eater. SteadyPlate tracks macros, LazyPlate finds recipes from what you have, PetPlate keeps your animals safe.">
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .hero {
+      padding: 72px 0 56px;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--gray-mid);
+      margin-bottom: 18px;
+    }
+
+    .hero-headline {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 6vw, 58px);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -1.5px;
+      color: var(--black);
+      margin-bottom: 20px;
+    }
+
+    .hero-headline em {
+      font-style: italic;
+      color: var(--gray-mid);
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: var(--gray-mid);
+      max-width: 460px;
+      margin: 0 auto 36px;
+      line-height: 1.65;
+    }
+
+    .hero-tools-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hero-pill {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--gray-border);
+      color: var(--gray-mid);
+    }
+
+    .hero-pill.steady { background: var(--steady-light); color: var(--steady-dark); border-color: transparent; }
+    .hero-pill.lazy   { background: var(--lazy-light);   color: var(--lazy-dark);   border-color: transparent; }
+    .hero-pill.pet    { background: var(--pet-light);    color: var(--pet-dark);    border-color: transparent; }
+
+    /* Tools section */
+    .tools-section {
+      padding: 24px 0 64px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .tool-card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 28px 26px 24px;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.18s, box-shadow 0.18s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .tool-card.steady::before { background: var(--steady); }
+    .tool-card.lazy::before   { background: var(--lazy); }
+    .tool-card.pet::before    { background: var(--pet); }
+
+    .tool-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(28,28,26,0.1), 0 0 0 0.5px rgba(28,28,26,0.08);
+    }
+
+    .tool-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .tool-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .tool-card.steady .tool-card-icon { background: var(--steady-light); }
+    .tool-card.lazy   .tool-card-icon { background: var(--lazy-light); }
+    .tool-card.pet    .tool-card-icon { background: var(--pet-light); }
+
+    .tool-card-free {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--gray-mid);
+    }
+
+    .tool-card-name {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .tool-card-tagline {
+      font-size: 14px;
+      color: var(--gray-mid);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .tool-card-features {
+      list-style: none;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .tool-card-features li {
+      font-size: 14px;
+      color: var(--black);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .feature-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .tool-card.steady .feature-dot { background: var(--steady); }
+    .tool-card.lazy   .feature-dot { background: var(--lazy); }
+    .tool-card.pet    .feature-dot { background: var(--pet); }
+
+    .tool-card-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 18px;
+      border-top: 0.5px solid var(--gray-border);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .tool-card.steady .tool-card-cta { color: var(--steady-dark); }
+    .tool-card.lazy   .tool-card-cta { color: var(--lazy-dark); }
+    .tool-card.pet    .tool-card-cta { color: var(--pet-dark); }
+
+    /* Why section */
+    .why-section {
+      background: var(--black);
+      color: var(--white);
+      padding: 64px 0;
+      margin: 0 0 0;
+    }
+
+    .why-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .why-headline {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 700;
+      margin-bottom: 40px;
+      letter-spacing: -0.5px;
+    }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px;
+    }
+
+    .why-item-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(250,250,247,0.4);
+      margin-bottom: 8px;
+    }
+
+    .why-item-value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .why-item-desc {
+      font-size: 14px;
+      color: rgba(250,250,247,0.55);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="ph-nav">
+    <a href="/" class="ph-logo">
+      <span class="ph-logo-dot"></span>
+      PlateHub
+    </a>
+    <ul class="ph-nav-links">
+      <li><a href="steadyplate/">SteadyPlate</a></li>
+      <li><a href="lazyplate/">LazyPlate</a></li>
+      <li><a href="petplate/">PetPlate</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="ph-container">
+      <p class="hero-eyebrow">Three tools. One kitchen.</p>
+      <h1 class="hero-headline">Meal planning for<br><em>every kind of eater.</em></h1>
+      <p class="hero-sub">Free tools to plan your meals, use what's in the fridge, and keep your pets safe — no account needed.</p>
+      <div class="hero-tools-preview">
+        <a href="steadyplate/" class="hero-pill steady">📊 SteadyPlate</a>
+        <a href="lazyplate/" class="hero-pill lazy">🥘 LazyPlate</a>
+        <a href="petplate/" class="hero-pill pet">🐾 PetPlate</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="tools-section">
+    <div class="ph-container">
+      <div class="tools-grid">
+
+        <a href="steadyplate/" class="tool-card steady">
+          <div class="tool-card-header">
+            <div class="tool-card-icon">📊</div>
+            <span class="tool-card-free">Free</span>
+          </div>
+          <h2 class="tool-card-name">SteadyPlate</h2>
+          <p class="tool-card-tagline">For the planner who actually follows through.</p>
+          <ul class="tool-card-features">
+            <li><span class="feature-dot"></span>Track calories & macros</li>
+            <li><span class="feature-dot"></span>Plan meals for the week</li>
+            <li><span class="feature-dot"></span>Build your grocery list</li>
+            <li><span class="feature-dot"></span>Set nutrition targets</li>
+          </ul>
+          <div class="tool-card-cta">
+            <span>Open SteadyPlate</span>
+            <span>→</span>
+          </div>
+        </a>
+
+        <a href="lazyplate/" class="tool-card lazy">
+          <div class="tool-card-header">
+            <div class="tool-card-icon">🥘</div>
+            <span class="tool-card-free">Free</span>
+          </div>
+          <h2 class="tool-card-name">LazyPlate</h2>
+          <p class="tool-card-tagline">Tell us what's in your fridge. Eat in 20 minutes.</p>
+          <ul class="tool-card-features">
+            <li><span class="feature-dot"></span>Enter what you have</li>
+            <li><span class="feature-dot"></span>Get instant recipe ideas</li>
+            <li><span class="feature-dot"></span>Filter by effort & time</li>
+            <li><span class="feature-dot"></span>5-ingredient max mode</li>
+          </ul>
+          <div class="tool-card-cta">
+            <span>Open LazyPlate</span>
+            <span>→</span>
+          </div>
+        </a>
+
+        <a href="petplate/" class="tool-card pet">
+          <div class="tool-card-header">
+            <div class="tool-card-icon">🐾</div>
+            <span class="tool-card-free">Free</span>
+          </div>
+          <h2 class="tool-card-name">PetPlate</h2>
+          <p class="tool-card-tagline">Is this food safe for your pet? Find out fast.</p>
+          <ul class="tool-card-features">
+            <li><span class="feature-dot"></span>Safe & unsafe food checker</li>
+            <li><span class="feature-dot"></span>Portioning by pet weight</li>
+            <li><span class="feature-dot"></span>Dogs, cats, rabbits & more</li>
+            <li><span class="feature-dot"></span>Vet-referenced data</li>
+          </ul>
+          <div class="tool-card-cta">
+            <span>Open PetPlate</span>
+            <span>→</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="why-section">
+    <div class="why-inner">
+      <h2 class="why-headline">Three tools.<br>One free account.<br>Zero subscriptions.</h2>
+      <div class="why-grid">
+        <div>
+          <p class="why-item-label">Tools</p>
+          <p class="why-item-value">3</p>
+          <p class="why-item-desc">Separate tools, each built for a different kind of cooking problem.</p>
+        </div>
+        <div>
+          <p class="why-item-label">Cost</p>
+          <p class="why-item-value">$0</p>
+          <p class="why-item-desc">Everything on PlateHub is free. No paywall, no trial period.</p>
+        </div>
+        <div>
+          <p class="why-item-label">Sign-up required</p>
+          <p class="why-item-value">None</p>
+          <p class="why-item-desc">Open any tool and use it. No email, no password.</p>
+        </div>
+        <div>
+          <p class="why-item-label">Powered by</p>
+          <p class="why-item-value">AI</p>
+          <p class="why-item-desc">Recipes and food safety answers generated in real time — not a static database.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ph-footer">
+    <div class="ph-footer-inner">
+      <a href="/" class="ph-footer-logo">
+        <span class="ph-logo-dot"></span>
+        PlateHub
+      </a>
+      <ul class="ph-footer-links">
+        <li><a href="steadyplate/">SteadyPlate</a></li>
+        <li><a href="lazyplate/">LazyPlate</a></li>
+        <li><a href="petplate/">PetPlate</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+      </ul>
+      <p class="ph-footer-copy">© 2026 PlateHub. Free meal planning tools for everyone.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
