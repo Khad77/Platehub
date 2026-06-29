@@ -565,9 +565,12 @@ Use realistic nutritional values. If a portion size is mentioned, use that amoun
       try {
         const res = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': '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',
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+},
             max_tokens: 1000,
             messages: [{ role: 'user', content: prompt }]
           })
