@@ -714,7 +714,7 @@ Respond ONLY with valid JSON, no markdown, no preamble. Format:
             model: 'claude-sonnet-4-6',
             max_tokens: 1000,
             messages: [{ role: 'user', content: prompt }]
-          })
+          }),
         });
 
         if (!response.ok) throw new Error(`API error ${response.status}`);
