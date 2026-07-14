@@ -679,12 +679,13 @@
       const dietNote = dietFilter === 'none' ? '' : `, must be ${dietFilter}`;
       const fiveNote = fiveIngMax ? ' Use 5 ingredients or fewer per recipe.' : '';
 
-      const prompt = `You are a practical home cooking assistant. The user has these ingredients: ${ingredients.join(', ')}.
+      const prompt = `You are a practical home cooking assistant. The user has these ingredients: ${ingredients.join(', ')}
+
 
 Generate exactly 3 recipe ideas they can make. Requirements:
 - Effort level: ${effortNote}${dietNote}${fiveNote}
 - Each recipe should primarily use the ingredients listed (they may have basic pantry staples: salt, pepper, oil, butter, water)
-- Be realistic and practical, not fancy
+- Be realistic and practical, not fancy}`;
 
 Respond ONLY with valid JSON, no markdown, no preamble. Format:
 {
